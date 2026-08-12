@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# uv
+uv.lock
+
+# Secrets - NEVER commit this
+config.yaml
+
+# Data (future use)
+data/
+*.db
+*.sqlite

@@ -1,0 +1,18 @@
+[project]
+name = "project1-auto-tradebot"
+version = "0.1.0"
+description = "Event-driven, plugin-based crypto market sentiment analysis system"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.13.5",
+    "aiosqlite>=0.20.0",
+    "feedparser>=6.0.12",
+    "loguru>=0.7.3",
+    "matplotlib>=3.9.0",
+    "openai>=1.0.0",
+    "pandas>=2.2.0",
+    "pydantic>=2.13.4",
+    "pyyaml>=6.0.3",
+    "requests>=2.34.2",
+]
