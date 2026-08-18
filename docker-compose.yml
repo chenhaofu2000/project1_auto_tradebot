@@ -1,0 +1,35 @@
+# Orchestrates the two services that make up the bot:
+#   collector - gathers news + K-lines, scores sentiment, writes SQLite
+#   api       - serves that data over HTTP (read-only)
+#
+# Both mount the SAME host data directory, so the API reads exactly what
+# the collector writes. Start everything with:  docker compose up --build
+
+services:
+  collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.collector
+    image: tradebot-collector
+    container_name: tradebot-collector
+    # The API key is read from the host environment (see .env below),
+    # never hard-coded here and never committed.
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped     # auto-restart if it crashes; key for 24/7 run
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: tradebot-api
+    container_name: tradebot-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data        # read-only side: same DB the collector writes
+    restart: unless-stopped
+    depends_on:
+      - collector               # start collector first (ordering only)

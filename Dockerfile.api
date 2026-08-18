@@ -1,0 +1,31 @@
+# ---- Base image ----
+FROM python:3.12-slim
+
+# ---- Install uv ----
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# ---- Dependencies first (layer caching) ----
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev
+
+# ---- Copy application source ----
+# The API needs: the api package, the run_api entrypoint, the core config
+# loader (it imports core.config), and config.yaml for non-secret settings.
+COPY api/ ./api/
+COPY core/ ./core/
+COPY run_api.py ./
+COPY config.yaml ./
+
+# ---- Runtime configuration ----
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONIOENCODING=utf-8
+ENV LANG=C.UTF-8
+
+# The API listens on port 8000. EXPOSE documents this; the actual
+# port mapping happens at run time (-p) or in docker-compose.
+EXPOSE 8000
+
+# ---- Start the API server ----
+CMD ["uv", "run", "--no-dev", "python", "run_api.py"]

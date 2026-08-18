@@ -1,4 +1,4 @@
-*.txt# Python
+# Python
 __pycache__/
 *.py[cod]
 .venv/
@@ -8,9 +8,12 @@ uv.lock
 
 # Secrets - NEVER commit this
 config.yaml
+.env
 
-# Data (future use)
+# Data
 data/
 *.db
 *.sqlite
+
+# Notes
 *.txt

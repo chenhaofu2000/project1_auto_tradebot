@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+data/
+*.db
+*.sqlite
+tests/
+scripts/
+结构讲解.txt
+README.md

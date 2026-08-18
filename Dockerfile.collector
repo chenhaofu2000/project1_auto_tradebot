@@ -1,0 +1,38 @@
+#Dockerfile.collector
+
+# ---- Base image ----
+# Slim Python 3.12 to match .python-version. "slim" keeps the image small
+# while still having enough to install most packages.
+FROM python:3.12-slim
+
+# ---- Install uv ----
+# We use the same package manager inside the container as on your machine,
+# so dependency resolution is identical. uv ships as a single binary.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# ---- Working directory inside the container ----
+WORKDIR /app
+
+# ---- Install dependencies first (layer caching) ----
+# Copy ONLY the dependency manifests before the source code. Docker caches
+# each step; as long as these two files don't change, the (slow) dependency
+# install is reused across rebuilds even when you edit your Python code.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev
+
+# ---- Copy the application source ----
+COPY core/ ./core/
+COPY plugins/ ./plugins/
+COPY main.py ./
+COPY config.yaml ./
+
+# ---- Runtime configuration ----
+# The API key is NOT baked in. It is injected as an environment variable
+# at run time (docker run -e LLM_API_KEY=... or via compose/SSM later).
+# PYTHONUNBUFFERED makes logs appear immediately instead of being buffered,
+# which matters when you're watching container logs.
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONIOENCODING=utf-8
+ENV LANG=C.UTF-8
+# ---- What to run when the container starts ----
+CMD ["uv", "run", "--no-dev", "python", "main.py"]
