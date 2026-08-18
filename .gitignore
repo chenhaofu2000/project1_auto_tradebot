@@ -1,4 +1,4 @@
-# Python
+*.txt# Python
 __pycache__/
 *.py[cod]
 .venv/
@@ -13,3 +13,4 @@ config.yaml
 data/
 *.db
 *.sqlite
+*.txt
