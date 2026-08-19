@@ -3,8 +3,7 @@ __pycache__/
 *.py[cod]
 .venv/
 
-# uv
-uv.lock
+
 
 # Secrets - NEVER commit this
 config.yaml
@@ -17,3 +16,6 @@ data/
 
 # Notes
 *.txt
+
+# pem
+*.pem
