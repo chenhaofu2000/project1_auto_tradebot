@@ -68,6 +68,9 @@ jobs:
       - name: 同步依赖
         run: uv sync --frozen --all-extras --dev
 
+      - name: 准备配置文件
+        run: cp config.example.yaml config.yaml
+
       - name: 跑测试(跳过需要外网的用例)
         env:
           LLM_API_KEY: dummy-key-for-ci
