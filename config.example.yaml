@@ -1,0 +1,45 @@
+llm:
+  base_url: https://ws-x0do5dgauvtvbyn1.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1
+  api_key: ''
+  model: qwen3.7-plus
+news_crawler:
+  poll_interval: 300
+  request_timeout: 10
+sentiment:
+  core_coins:
+  - BTC
+  - ETH
+  - SOL
+  batch_window: 10.0
+  batch_max_size: 10
+  window_minutes: 60
+  hot_mention_threshold: 3
+storage:
+  flush_interval: 30.0
+technical:
+  symbols:
+  - BTCUSDT
+  - ETHUSDT
+  - SOLUSDT
+  interval: 1h
+  lookback: 200
+  poll_interval: 3600
+  request_timeout: 10
+  rsi_period: 14
+  momentum_lookback: 24
+  momentum_clip_pct: 5.0
+  volume_avg_periods: 20
+  ema_fast: 45
+  ema_slow: 125
+strategy:
+  levels:
+    pivot_left: 3
+    pivot_right: 3
+    cluster_tolerance_pct: 0.5
+    min_touches: 2
+    max_levels: 6
+  range_max_ema_spread_pct: 1.0
+  near_level_pct: 0.8
+  require_rsi_confirm: true
+  rsi_oversold: 35.0
+  rsi_overbought: 65.0
