@@ -35,14 +35,12 @@ jobs:
       - name: 同步依赖
         run: uv sync --frozen --all-extras --dev
 
-      # continue-on-error: 第一次跑大概率一堆格式问题,先报出来但不阻断。
-      # 等代码清理完再删掉这两行,变成硬性门槛。
+      # 代码库已完成一次性 ruff 清理,这两步是硬性门槛:
+      # 格式或静态检查不通过直接阻断,不允许带着 lint 问题合并。
       - name: ruff 格式检查
-        continue-on-error: true
         run: uv run ruff format --check .
 
       - name: ruff 静态检查
-        continue-on-error: true
         run: uv run ruff check .
 
   # ------------------------------------------------------------------
@@ -93,7 +91,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 必须在构建之前:Dockerfile 里有 COPY config.yaml
+      # compose 里 config.yaml 是 bind mount 源,校验配置时必须存在
       - name: 准备配置文件
         run: cp config.example.yaml config.yaml
 
