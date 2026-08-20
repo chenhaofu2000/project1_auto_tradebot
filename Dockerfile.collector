@@ -24,7 +24,11 @@ RUN uv sync --frozen --no-install-project --no-dev
 COPY core/ ./core/
 COPY plugins/ ./plugins/
 COPY main.py ./
-COPY config.yaml ./
+
+# NOTE: config.yaml is deliberately NOT copied here.
+# Baking config into the image means a rebuild is required for every config
+# change, and makes the image environment-specific. It is bind-mounted at
+# run time instead (see docker-compose.yml).
 
 # ---- Runtime configuration ----
 # The API key is NOT baked in. It is injected as an environment variable
@@ -34,5 +38,6 @@ COPY config.yaml ./
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 ENV LANG=C.UTF-8
+
 # ---- What to run when the container starts ----
 CMD ["uv", "run", "--no-dev", "python", "main.py"]

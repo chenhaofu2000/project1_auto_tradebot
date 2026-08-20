@@ -11,12 +11,16 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 # ---- Copy application source ----
-# The API needs: the api package, the run_api entrypoint, the core config
-# loader (it imports core.config), and config.yaml for non-secret settings.
+# The API needs: the api package, the run_api entrypoint, and the core
+# config loader (it imports core.config).
 COPY api/ ./api/
 COPY core/ ./core/
 COPY run_api.py ./
-COPY config.yaml ./
+
+# NOTE: config.yaml is deliberately NOT copied here.
+# The settings endpoint writes back to config.yaml, so it must be a
+# bind-mounted host file rather than a baked-in image layer — otherwise
+# every write would be lost on container restart.
 
 # ---- Runtime configuration ----
 ENV PYTHONUNBUFFERED=1
