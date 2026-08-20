@@ -96,8 +96,7 @@ class IndicatorEngine(Plugin):
         self._running = True
         self.bus.subscribe(EventType.KLINE, self._on_kline)
         logger.info(
-            f"[{self.name}] started "
-            f"(rsi={self.rsi_period}, ema={self.ema_fast}/{self.ema_slow})"
+            f"[{self.name}] started (rsi={self.rsi_period}, ema={self.ema_fast}/{self.ema_slow})"
         )
 
     async def stop(self) -> None:
@@ -135,9 +134,7 @@ class IndicatorEngine(Plugin):
 
         # --- Momentum: % change over lookback window, normalized to [-1, 1] ---
         lookback = min(self.momentum_lookback, len(closes) - 1)
-        price_change_pct = (
-            (current_price - closes[-1 - lookback]) / closes[-1 - lookback] * 100
-        )
+        price_change_pct = (current_price - closes[-1 - lookback]) / closes[-1 - lookback] * 100
         momentum_score = _clip(price_change_pct / self.momentum_clip_pct, -1.0, 1.0)
 
         # --- RSI: raw 0..100 value, no interpretation applied here ---
@@ -152,15 +149,9 @@ class IndicatorEngine(Plugin):
         ema_fast = _compute_ema(closes, self.ema_fast)
         ema_slow = _compute_ema(closes, self.ema_slow)
 
-        price_vs_ema45 = (
-            (current_price - ema_fast) / ema_fast * 100 if ema_fast > 0 else 0.0
-        )
-        price_vs_ema125 = (
-            (current_price - ema_slow) / ema_slow * 100 if ema_slow > 0 else 0.0
-        )
-        ema45_vs_ema125 = (
-            (ema_fast - ema_slow) / ema_slow * 100 if ema_slow > 0 else 0.0
-        )
+        price_vs_ema45 = (current_price - ema_fast) / ema_fast * 100 if ema_fast > 0 else 0.0
+        price_vs_ema125 = (current_price - ema_slow) / ema_slow * 100 if ema_slow > 0 else 0.0
+        ema45_vs_ema125 = (ema_fast - ema_slow) / ema_slow * 100 if ema_slow > 0 else 0.0
 
         logger.info(
             f"[{self.name}] {symbol}: momentum={momentum_score:+.2f} "

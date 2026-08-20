@@ -31,3 +31,16 @@ dev = [
 markers = [
     "network: 需要外网访问的测试,CI 中跳过",
 ]
+
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# ruff 默认只开 E/F,这里显式列出想要的规则集
+select = ["E", "F", "I", "UP", "B"]
+
+# 有意忽略的规则:
+#   BLE001 — 插件轮询循环需要 catch-all,防止单个插件崩溃拖垮 EventBus
+#   B008   — FastAPI 的 Body()/Depends() 依赖注入就是默认参数调用
+ignore = ["BLE001", "B008", "UP042"]

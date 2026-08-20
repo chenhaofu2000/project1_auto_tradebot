@@ -15,19 +15,22 @@ from loguru import logger
 
 from core.config import load_config
 from core.event_bus import EventBus
+from plugins.sentiment.aggregator import SentimentAggregator
 from plugins.sentiment.news_crawler import NewsCrawler
 from plugins.sentiment.scorer import SentimentScorer
-from plugins.sentiment.aggregator import SentimentAggregator
 
 
 async def run_test() -> None:
     config = load_config()
     bus = EventBus()
 
-    crawler = NewsCrawler(bus, config={
-        "poll_interval": 30.0,
-        "request_timeout": config["news_crawler"]["request_timeout"],
-    })
+    crawler = NewsCrawler(
+        bus,
+        config={
+            "poll_interval": 30.0,
+            "request_timeout": config["news_crawler"]["request_timeout"],
+        },
+    )
     scorer = SentimentScorer(bus, config=config)
     aggregator = SentimentAggregator(bus, config=config)
 
@@ -47,13 +50,10 @@ async def run_test() -> None:
     # Final summary
     logger.info("=" * 60)
     logger.info("FINAL SENTIMENT SNAPSHOT:")
-    for snap in sorted(
-        aggregator.all_snapshots(), key=lambda s: s["mentions"], reverse=True
-    ):
+    for snap in sorted(aggregator.all_snapshots(), key=lambda s: s["mentions"], reverse=True):
         hot = " <-- HOT" if snap["is_hot"] else ""
         logger.info(
-            f"  {snap['coin']:8s} avg={snap['avg_score']:+.2f} "
-            f"mentions={snap['mentions']}{hot}"
+            f"  {snap['coin']:8s} avg={snap['avg_score']:+.2f} mentions={snap['mentions']}{hot}"
         )
 
 

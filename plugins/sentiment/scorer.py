@@ -101,10 +101,7 @@ class SentimentScorer(Plugin):
     # ------------------------------------------------------------------
     async def _score_chunk(self, chunk: list[Event]) -> None:
         """One LLM call for a chunk of news items."""
-        payload = [
-            {"idx": i, "title": ev.data.get("title", "")}
-            for i, ev in enumerate(chunk)
-        ]
+        payload = [{"idx": i, "title": ev.data.get("title", "")} for i, ev in enumerate(chunk)]
 
         resp = await self._client.chat.completions.create(
             model=self._model,
@@ -112,7 +109,7 @@ class SentimentScorer(Plugin):
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
             ],
-            temperature=0.0,   # deterministic scoring
+            temperature=0.0,  # deterministic scoring
         )
 
         text = resp.choices[0].message.content or "[]"

@@ -21,8 +21,8 @@ from core.config import load_config
 from core.event_bus import EventBus
 from core.event_types import EventType
 from core.events import Event
-from plugins.technical.kline_fetcher import KlineFetcher
 from plugins.technical.indicator_engine import IndicatorEngine
+from plugins.technical.kline_fetcher import KlineFetcher
 
 _latest: dict[str, dict] = {}
 
@@ -54,9 +54,7 @@ async def run_test() -> None:
     logger.info("=" * 78)
     logger.info("LATEST RAW INDICATORS (no weighting applied):")
     for symbol, d in _latest.items():
-        logger.info(
-            f"  {symbol:10s} close=${d['close_price']:.2f}"
-        )
+        logger.info(f"  {symbol:10s} close=${d['close_price']:.2f}")
         logger.info(
             f"    momentum={d['momentum_score']:+.2f}  "
             f"rsi={d['rsi']:.1f}  "

@@ -34,10 +34,9 @@ def load_config() -> dict[str, Any]:
     """Load config.yaml and overlay secrets from the environment."""
     if not _CONFIG_PATH.exists():
         raise FileNotFoundError(
-            f"config.yaml not found at {_CONFIG_PATH}. "
-            "Copy the template and fill in your settings."
+            f"config.yaml not found at {_CONFIG_PATH}. Copy the template and fill in your settings."
         )
-    with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
+    with open(_CONFIG_PATH, encoding="utf-8") as f:
         config = yaml.safe_load(f) or {}
 
     _overlay_secrets(config)

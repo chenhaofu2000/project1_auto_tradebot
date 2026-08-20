@@ -26,7 +26,6 @@ from core.event_types import EventType
 from core.events import Event
 from core.plugin import Plugin
 
-
 # Default RSS sources. Override via config if you want.
 DEFAULT_FEEDS: list[dict[str, str]] = [
     {
@@ -105,15 +104,11 @@ class NewsCrawler(Plugin):
             *(self._fetch_one_feed(session, feed) for feed in self.feeds),
             return_exceptions=True,
         )
-        for feed, result in zip(self.feeds, results):
+        for feed, result in zip(self.feeds, results, strict=True):
             if isinstance(result, Exception):
-                logger.warning(
-                    f"[{self.name}] feed '{feed['name']}' failed: {result!r}"
-                )
+                logger.warning(f"[{self.name}] feed '{feed['name']}' failed: {result!r}")
 
-    async def _fetch_one_feed(
-        self, session: aiohttp.ClientSession, feed: dict[str, str]
-    ) -> None:
+    async def _fetch_one_feed(self, session: aiohttp.ClientSession, feed: dict[str, str]) -> None:
         """Fetch and parse a single RSS feed, publish new articles."""
         url = feed["url"]
         feed_name = feed["name"]
@@ -136,9 +131,7 @@ class NewsCrawler(Plugin):
 
             await self._publish_article(feed_name, entry)
 
-        logger.info(
-            f"[{self.name}] {feed_name}: {new_count} new / {len(parsed.entries)} total"
-        )
+        logger.info(f"[{self.name}] {feed_name}: {new_count} new / {len(parsed.entries)} total")
 
     async def _publish_article(self, feed_name: str, entry: Any) -> None:
         """Wrap a parsed RSS entry into a NEWS event and publish it."""

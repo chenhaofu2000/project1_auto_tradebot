@@ -106,10 +106,12 @@ def _cluster(prices: list[float], tolerance_pct: float, min_touches: int) -> lis
     levels = []
     for group in clusters:
         if len(group) >= min_touches:
-            levels.append({
-                "price": sum(group) / len(group),   # average of the touches
-                "touches": len(group),
-            })
+            levels.append(
+                {
+                    "price": sum(group) / len(group),  # average of the touches
+                    "touches": len(group),
+                }
+            )
     return levels
 
 
@@ -133,11 +135,7 @@ def nearest_levels(current_price: float, levels: dict[str, Any]) -> dict[str, An
         "dist_to_resistance_pct": None,
     }
     if nearest_sup:
-        out["dist_to_support_pct"] = (
-            (current_price - nearest_sup["price"]) / current_price * 100
-        )
+        out["dist_to_support_pct"] = (current_price - nearest_sup["price"]) / current_price * 100
     if nearest_res:
-        out["dist_to_resistance_pct"] = (
-            (nearest_res["price"] - current_price) / current_price * 100
-        )
+        out["dist_to_resistance_pct"] = (nearest_res["price"] - current_price) / current_price * 100
     return out

@@ -35,25 +35,17 @@ class EventBus:
     # ------------------------------------------------------------------
     # Subscription API
     # ------------------------------------------------------------------
-    def subscribe(
-        self, event_type: EventType, handler: AsyncEventHandler
-    ) -> None:
+    def subscribe(self, event_type: EventType, handler: AsyncEventHandler) -> None:
         """Register a handler for a given event type."""
         self._subscribers[event_type].append(handler)
-        logger.debug(
-            f"Subscribed handler '{handler.__name__}' to '{event_type.value}'"
-        )
+        logger.debug(f"Subscribed handler '{handler.__name__}' to '{event_type.value}'")
 
-    def unsubscribe(
-        self, event_type: EventType, handler: AsyncEventHandler
-    ) -> None:
+    def unsubscribe(self, event_type: EventType, handler: AsyncEventHandler) -> None:
         """Remove a previously registered handler. Useful when hot-reloading
         a strategy plugin during development."""
         if handler in self._subscribers[event_type]:
             self._subscribers[event_type].remove(handler)
-            logger.debug(
-                f"Unsubscribed handler '{handler.__name__}' from '{event_type.value}'"
-            )
+            logger.debug(f"Unsubscribed handler '{handler.__name__}' from '{event_type.value}'")
 
     # ------------------------------------------------------------------
     # Publish API
@@ -93,7 +85,7 @@ class EventBus:
         while self._running:
             try:
                 event = await asyncio.wait_for(self._queue.get(), timeout=1.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue
 
             await self._dispatch_single(event)
@@ -106,9 +98,7 @@ class EventBus:
         other handlers."""
         handlers = self._subscribers.get(event.type, [])
         if not handlers:
-            logger.debug(
-                f"No subscribers for '{event.type.value}', event dropped"
-            )
+            logger.debug(f"No subscribers for '{event.type.value}', event dropped")
             return
 
         results = await asyncio.gather(
@@ -116,9 +106,8 @@ class EventBus:
             return_exceptions=True,
         )
 
-        for handler, result in zip(handlers, results):
+        for handler, result in zip(handlers, results, strict=True):
             if isinstance(result, Exception):
                 logger.error(
-                    f"Handler '{handler.__name__}' raised on "
-                    f"'{event.type.value}': {result!r}"
+                    f"Handler '{handler.__name__}' raised on '{event.type.value}': {result!r}"
                 )

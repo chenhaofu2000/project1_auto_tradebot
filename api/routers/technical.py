@@ -18,7 +18,7 @@ def technical_latest() -> list[dict]:
     try:
         return db.get_technical_latest()
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
 
 @router.get("/technical/history")
@@ -36,7 +36,7 @@ def technical_history(
     try:
         return db.get_technical_history(symbol, hours)
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
 
 @router.get("/technical/symbols")
@@ -44,7 +44,7 @@ def technical_symbols() -> list[str]:
     try:
         return db.get_technical_symbols()
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
 
 @router.get("/klines")
@@ -58,7 +58,7 @@ def klines(
     try:
         return db.get_klines(symbol, interval, limit)
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
 
 @router.get("/klines/available")
@@ -67,4 +67,4 @@ def klines_available() -> list[dict]:
     try:
         return db.get_kline_symbols()
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e

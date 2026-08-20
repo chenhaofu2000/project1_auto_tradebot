@@ -18,7 +18,7 @@ the API only reads.
 
 import json
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -34,9 +34,7 @@ def _connect() -> sqlite3.Connection:
     """Open a read-only connection. Fails loudly if the DB is missing
     rather than silently creating an empty one."""
     if not DB_PATH.exists():
-        raise DatabaseNotReady(
-            f"Database not found at {DB_PATH}. Run main.py at least once."
-        )
+        raise DatabaseNotReady(f"Database not found at {DB_PATH}. Run main.py at least once.")
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     return conn
@@ -46,7 +44,7 @@ def _cutoff_iso(hours: float) -> str:
     """UTC cutoff timestamp in the same ISO format the collector writes.
     ISO-8601 UTC strings sort lexicographically, so plain string
     comparison in SQL gives correct chronological filtering."""
-    return (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    return (datetime.now(UTC) - timedelta(hours=hours)).isoformat()
 
 
 # ----------------------------------------------------------------------
@@ -74,8 +72,7 @@ def get_health() -> dict[str, Any]:
 
         try:
             row = conn.execute(
-                "SELECT COUNT(*) AS n, MIN(open_time) AS lo, MAX(open_time) AS hi "
-                "FROM klines"
+                "SELECT COUNT(*) AS n, MIN(open_time) AS lo, MAX(open_time) AS hi FROM klines"
             ).fetchone()
             stats["klines"] = {
                 "rows": row["n"],
@@ -248,18 +245,14 @@ def get_technical_history(symbol: str, hours: float = 168.0) -> list[dict[str, A
 
 def get_technical_symbols() -> list[str]:
     with _connect() as conn:
-        rows = conn.execute(
-            "SELECT DISTINCT symbol FROM technical ORDER BY symbol"
-        ).fetchall()
+        rows = conn.execute("SELECT DISTINCT symbol FROM technical ORDER BY symbol").fetchall()
     return [r["symbol"] for r in rows]
 
 
 # ----------------------------------------------------------------------
 # K-lines
 # ----------------------------------------------------------------------
-def get_klines(
-    symbol: str, interval: str = "1h", limit: int = 200
-) -> list[dict[str, Any]]:
+def get_klines(symbol: str, interval: str = "1h", limit: int = 200) -> list[dict[str, Any]]:
     """Historical candles, oldest first (chart libraries expect
     ascending time). Fetches the newest `limit` rows, then reverses."""
     with _connect() as conn:

@@ -39,8 +39,7 @@ def compute_signal(
     is_ranging = ema_spread <= range_max_spread
 
     if not is_ranging:
-        return _flat(f"trending (EMA spread {ema_spread:.2f}% > "
-                     f"{range_max_spread}%), staying out")
+        return _flat(f"trending (EMA spread {ema_spread:.2f}% > {range_max_spread}%), staying out")
 
     # --- Step 2: in a range -> mean reversion around levels ---
     near_pct = float(cfg.get("near_level_pct", 0.8))
@@ -63,8 +62,7 @@ def compute_signal(
         return {
             "direction": "LONG",
             "score": round(strength, 3),
-            "reason": (f"ranging; near support "
-                       f"({dist_sup:.2f}% away), rsi={rsi:.0f}"),
+            "reason": (f"ranging; near support ({dist_sup:.2f}% away), rsi={rsi:.0f}"),
         }
 
     if near_resistance and (not require_rsi or rsi >= rsi_overbought):
@@ -72,12 +70,10 @@ def compute_signal(
         return {
             "direction": "SHORT",
             "score": round(-strength, 3),
-            "reason": (f"ranging; near resistance "
-                       f"({dist_res:.2f}% away), rsi={rsi:.0f}"),
+            "reason": (f"ranging; near resistance ({dist_res:.2f}% away), rsi={rsi:.0f}"),
         }
 
-    return _flat(f"ranging but price mid-range "
-                 f"(sup {dist_sup}, res {dist_res})")
+    return _flat(f"ranging but price mid-range (sup {dist_sup}, res {dist_res})")
 
 
 def _flat(reason: str) -> dict[str, Any]:

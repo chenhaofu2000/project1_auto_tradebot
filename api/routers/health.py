@@ -23,4 +23,4 @@ def health() -> dict:
     try:
         return db.get_health()
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e

@@ -63,16 +63,21 @@ def run() -> None:
 
     ni = nearest_levels(current["close"], levels)
     if ni["nearest_support"]:
-        logger.info(f"Nearest support:    ${ni['nearest_support']['price']:.2f} "
-                    f"({ni['dist_to_support_pct']:.2f}% below)")
+        logger.info(
+            f"Nearest support:    ${ni['nearest_support']['price']:.2f} "
+            f"({ni['dist_to_support_pct']:.2f}% below)"
+        )
     if ni["nearest_resistance"]:
-        logger.info(f"Nearest resistance: ${ni['nearest_resistance']['price']:.2f} "
-                    f"({ni['dist_to_resistance_pct']:.2f}% above)")
+        logger.info(
+            f"Nearest resistance: ${ni['nearest_resistance']['price']:.2f} "
+            f"({ni['dist_to_resistance_pct']:.2f}% above)"
+        )
 
     # Build a minimal factors dict from the candles for the signal.
     # (In production these come from IndicatorEngine; here we approximate
     # ema spread + rsi just to exercise the signal logic.)
     from plugins.technical.indicator_engine import _compute_ema, _compute_rsi
+
     closes = [c["close"] for c in history]
     ema45 = _compute_ema(closes, 45)
     ema125 = _compute_ema(closes, 125)
@@ -83,8 +88,7 @@ def run() -> None:
 
     signal = compute_signal(factors, ni, strat_cfg)
     logger.info("=" * 55)
-    logger.info(f"EMA spread: {factors['ema45_vs_ema125']:+.2f}%  "
-                f"RSI: {factors['rsi']:.0f}")
+    logger.info(f"EMA spread: {factors['ema45_vs_ema125']:+.2f}%  RSI: {factors['rsi']:.0f}")
     logger.info(f"SIGNAL: {signal['direction']}  score={signal['score']}")
     logger.info(f"Reason: {signal['reason']}")
 

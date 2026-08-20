@@ -13,8 +13,8 @@ Run with:
 from fastapi.testclient import TestClient
 from loguru import logger
 
-from api.app import app
 from api import settings_store as store
+from api.app import app
 
 client = TestClient(app)
 
@@ -42,15 +42,11 @@ def test_sentiment() -> None:
         return
     logger.info(f"Sentiment over 24h ({len(coins)} coins):")
     for c in coins[:8]:
-        logger.info(
-            f"  {c['coin']:6s} avg={c['avg_score']:+.2f} mentions={c['mentions']}"
-        )
+        logger.info(f"  {c['coin']:6s} avg={c['avg_score']:+.2f} mentions={c['mentions']}")
 
     if coins:
         top = coins[0]["coin"]
-        hist = _check(
-            client.get(f"/api/sentiment/history?coin={top}&hours=24"), "history"
-        )
+        hist = _check(client.get(f"/api/sentiment/history?coin={top}&hours=24"), "history")
         logger.info(f"{top} history: {len(hist)} points")
 
     news = _check(client.get("/api/sentiment/news?limit=3"), "news")
@@ -73,9 +69,7 @@ def test_technical() -> None:
 
     if latest:
         sym = latest[0]["symbol"]
-        hist = _check(
-            client.get(f"/api/technical/history?symbol={sym}&hours=168"), "tech history"
-        )
+        hist = _check(client.get(f"/api/technical/history?symbol={sym}&hours=168"), "tech history")
         logger.info(f"{sym} indicator history: {len(hist)} points (deduplicated)")
 
 
@@ -86,9 +80,7 @@ def test_klines() -> None:
     logger.info(f"Backfilled K-lines: {avail}")
     if avail:
         sym, iv = avail[0]["symbol"], avail[0]["interval"]
-        candles = _check(
-            client.get(f"/api/klines?symbol={sym}&interval={iv}&limit=5"), "klines"
-        )
+        candles = _check(client.get(f"/api/klines?symbol={sym}&interval={iv}&limit=5"), "klines")
         logger.info(f"{sym} {iv} last {len(candles)} candles:")
         for c in candles:
             logger.info(f"  t={c['open_time']} close={c['close']:.2f}")

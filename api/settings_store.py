@@ -23,7 +23,7 @@ and expensive to discover later.
 """
 
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -70,7 +70,7 @@ class ConfigError(Exception):
 def _load_raw() -> dict[str, Any]:
     if not CONFIG_PATH.exists():
         raise ConfigError(f"config.yaml not found at {CONFIG_PATH}")
-    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+    with open(CONFIG_PATH, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
 
@@ -92,7 +92,7 @@ def _backup() -> Path:
     Cheap insurance: the file is tiny and a bad edit is otherwise
     unrecoverable."""
     BACKUP_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     dest = BACKUP_DIR / f"config.{stamp}.yaml"
     shutil.copy2(CONFIG_PATH, dest)
     return dest
@@ -184,7 +184,7 @@ def apply_updates(updates: dict[str, Any]) -> dict[str, Any]:
     tmp = CONFIG_PATH.with_suffix(".yaml.tmp")
     with open(tmp, "w", encoding="utf-8") as f:
         yaml.safe_dump(current, f, allow_unicode=True, sort_keys=False)
-    tmp.replace(CONFIG_PATH)   # atomic swap: no truncated file if we crash
+    tmp.replace(CONFIG_PATH)  # atomic swap: no truncated file if we crash
 
     result = load_public_config()
     result["_meta"] = {

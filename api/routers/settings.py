@@ -25,7 +25,7 @@ def read_settings() -> dict:
     try:
         return store.load_public_config()
     except store.ConfigError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
 
 @router.put("")
@@ -42,9 +42,9 @@ def update_settings(updates: dict[str, Any] = Body(...)) -> dict:
     try:
         result = store.apply_updates(updates)
     except store.ConfigError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except (ValueError, TypeError) as e:
-        raise HTTPException(status_code=400, detail=f"Invalid value: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid value: {e}") from e
 
     result.setdefault("_meta", {})["note"] = (
         "Saved. The collector loads config at startup, "

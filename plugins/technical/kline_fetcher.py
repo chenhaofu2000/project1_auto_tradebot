@@ -84,22 +84,18 @@ class KlineFetcher(Plugin):
             *(self._fetch_one_symbol(session, sym) for sym in self.symbols),
             return_exceptions=True,
         )
-        for sym, result in zip(self.symbols, results):
+        for sym, result in zip(self.symbols, results, strict=True):
             if isinstance(result, Exception):
                 logger.warning(f"[{self.name}] symbol '{sym}' failed: {result!r}")
 
-    async def _fetch_one_symbol(
-        self, session: aiohttp.ClientSession, symbol: str
-    ) -> None:
+    async def _fetch_one_symbol(self, session: aiohttp.ClientSession, symbol: str) -> None:
         params = {
             "symbol": symbol,
             "interval": self.interval,
             "limit": self.lookback,
         }
         timeout = aiohttp.ClientTimeout(total=self.request_timeout)
-        async with session.get(
-            BINANCE_KLINES_URL, params=params, timeout=timeout
-        ) as resp:
+        async with session.get(BINANCE_KLINES_URL, params=params, timeout=timeout) as resp:
             resp.raise_for_status()
             raw = await resp.json()
 

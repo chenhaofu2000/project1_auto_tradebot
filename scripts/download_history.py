@@ -17,7 +17,7 @@ Usage:
 import argparse
 import sqlite3
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -59,7 +59,7 @@ def fetch_page(symbol: str, interval: str, start_ms: int) -> list[list]:
 
 
 def download(conn: sqlite3.Connection, symbol: str, interval: str, days: int) -> int:
-    start = datetime.now(timezone.utc) - timedelta(days=days)
+    start = datetime.now(UTC) - timedelta(days=days)
     start_ms = int(start.timestamp() * 1000)
     now_ms = int(time.time() * 1000)
 
@@ -71,8 +71,14 @@ def download(conn: sqlite3.Connection, symbol: str, interval: str, days: int) ->
 
         rows = [
             (
-                symbol, interval, int(c[0]),
-                float(c[1]), float(c[2]), float(c[3]), float(c[4]), float(c[5]),
+                symbol,
+                interval,
+                int(c[0]),
+                float(c[1]),
+                float(c[2]),
+                float(c[3]),
+                float(c[4]),
+                float(c[5]),
             )
             for c in page
         ]
@@ -88,13 +94,13 @@ def download(conn: sqlite3.Connection, symbol: str, interval: str, days: int) ->
 
         last_open = int(page[-1][0])
         if last_open <= start_ms:
-            break                       # no forward progress; avoid infinite loop
+            break  # no forward progress; avoid infinite loop
         start_ms = last_open + 1
 
-        readable = datetime.fromtimestamp(last_open / 1000, timezone.utc)
+        readable = datetime.fromtimestamp(last_open / 1000, UTC)
         print(f"  {symbol} {interval}: {total} candles, up to {readable:%Y-%m-%d %H:%M}")
 
-        time.sleep(0.25)                # stay well under Binance rate limits
+        time.sleep(0.25)  # stay well under Binance rate limits
 
     return total
 
@@ -124,8 +130,8 @@ def main() -> None:
            FROM klines GROUP BY symbol, interval"""
     )
     for sym, iv, cnt, lo, hi in cur:
-        lo_d = datetime.fromtimestamp(lo / 1000, timezone.utc)
-        hi_d = datetime.fromtimestamp(hi / 1000, timezone.utc)
+        lo_d = datetime.fromtimestamp(lo / 1000, UTC)
+        hi_d = datetime.fromtimestamp(hi / 1000, UTC)
         print(f"{sym:10s} {iv:4s} {cnt:6d} candles  {lo_d:%Y-%m-%d} -> {hi_d:%Y-%m-%d}")
     conn.close()
 

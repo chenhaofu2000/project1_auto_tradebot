@@ -18,14 +18,14 @@ import signal
 from loguru import logger
 
 from core.config import load_config
-from core.database import init_db, get_db_path
+from core.database import get_db_path, init_db
 from core.event_bus import EventBus
+from plugins.sentiment.aggregator import SentimentAggregator
 from plugins.sentiment.news_crawler import NewsCrawler
 from plugins.sentiment.scorer import SentimentScorer
-from plugins.sentiment.aggregator import SentimentAggregator
-from plugins.technical.kline_fetcher import KlineFetcher
-from plugins.technical.indicator_engine import IndicatorEngine
 from plugins.storage.storage_plugin import StoragePlugin
+from plugins.technical.indicator_engine import IndicatorEngine
+from plugins.technical.kline_fetcher import KlineFetcher
 
 
 async def main() -> None:
@@ -49,12 +49,12 @@ async def main() -> None:
     # otherwise the first batch of events is dispatched with no listeners
     # and silently dropped.
     plugins = [
-        storage,            # subscribes to everything
-        aggregator,         # subscribes to SENTIMENT_SCORE
-        scorer,             # subscribes to NEWS, publishes SENTIMENT_SCORE
-        indicator_engine,   # subscribes to KLINE, publishes TECHNICAL_SCORE
-        crawler,            # publishes NEWS
-        kline_fetcher,      # publishes KLINE
+        storage,  # subscribes to everything
+        aggregator,  # subscribes to SENTIMENT_SCORE
+        scorer,  # subscribes to NEWS, publishes SENTIMENT_SCORE
+        indicator_engine,  # subscribes to KLINE, publishes TECHNICAL_SCORE
+        crawler,  # publishes NEWS
+        kline_fetcher,  # publishes KLINE
     ]
 
     await bus.start()

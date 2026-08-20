@@ -24,7 +24,7 @@ def sentiment_by_coin(
     try:
         return db.get_sentiment_by_coin(window_hours)
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
 
 @router.get("/history")
@@ -36,7 +36,7 @@ def sentiment_history(
     try:
         return db.get_sentiment_history(coin, hours)
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
 
 @router.get("/news")
@@ -45,4 +45,4 @@ def recent_news(limit: int = Query(50, ge=1, le=500)) -> list[dict]:
     try:
         return db.get_recent_news(limit)
     except db.DatabaseNotReady as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e

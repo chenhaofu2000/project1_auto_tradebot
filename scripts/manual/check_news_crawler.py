@@ -39,7 +39,7 @@ async def run_test() -> None:
     crawler = NewsCrawler(
         bus,
         config={
-            "poll_interval": 20.0,   # Poll every 20 seconds for this test
+            "poll_interval": 20.0,  # Poll every 20 seconds for this test
             "request_timeout": 10.0,
         },
     )

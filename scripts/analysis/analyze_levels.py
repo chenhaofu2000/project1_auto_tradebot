@@ -28,13 +28,13 @@ PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 DB_PATH: Final[Path] = PROJECT_ROOT / "data" / "market.db"
 
 # ---- 可调参数(全部集中在这里,便于敏感性测试)----
-PIVOT_LEFT: Final[int] = 5          # 枢轴左侧确认根数
-PIVOT_RIGHT: Final[int] = 5         # 枢轴右侧确认根数(决定确认延迟)
-LEVEL_TOLERANCE: Final[float] = 0.015   # 归入同一位置的价格容差 (1.5%)
+PIVOT_LEFT: Final[int] = 5  # 枢轴左侧确认根数
+PIVOT_RIGHT: Final[int] = 5  # 枢轴右侧确认根数(决定确认延迟)
+LEVEL_TOLERANCE: Final[float] = 0.015  # 归入同一位置的价格容差 (1.5%)
 BREAKOUT_THRESHOLD: Final[float] = 0.010  # 判定突破的收盘越界幅度 (1.0%)
 LOOKFORWARD_BARS: Final[tuple[int, ...]] = (10, 20, 40)  # 前瞻窗口
-MA_PERIOD_DAYS: Final[int] = 200    # 宏观代理变量: 200日均线
-MIN_TOUCHES: Final[int] = 2         # 构成一个"位置"的最少枢轴数
+MA_PERIOD_DAYS: Final[int] = 200  # 宏观代理变量: 200日均线
+MIN_TOUCHES: Final[int] = 2  # 构成一个"位置"的最少枢轴数
 
 Side = Literal["resistance", "support"]
 
@@ -140,10 +140,7 @@ class Level:
         return len(self.pivots)
 
     def matches(self, pivot: Pivot, tol: float) -> bool:
-        return (
-            pivot.side == self.side
-            and abs(pivot.price - self.price) / self.price <= tol
-        )
+        return pivot.side == self.side and abs(pivot.price - self.price) / self.price <= tol
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,8 +152,8 @@ class TouchEvent:
     n_touch: int
     confirm_idx: int
     level_price: float
-    span_bars: int          # 首次触碰到本次的跨度
-    above_ma: bool          # 宏观代理: 价格是否在200日均线上方
+    span_bars: int  # 首次触碰到本次的跨度
+    above_ma: bool  # 宏观代理: 价格是否在200日均线上方
 
 
 def build_touch_events(
@@ -278,14 +275,12 @@ def hazard_table(
 @dataclass(frozen=True, slots=True)
 class ChannelFit:
     slope: float
-    norm_slope: float   # 无量纲: 斜率 × 跨度 / 区间高度
+    norm_slope: float  # 无量纲: 斜率 × 跨度 / 区间高度
     r2: float
     n_points: int
 
 
-def fit_channel(
-    pivots: list[Pivot], side: Side, band_height: float
-) -> ChannelFit | None:
+def fit_channel(pivots: list[Pivot], side: Side, band_height: float) -> ChannelFit | None:
     """对同侧枢轴做线性回归,判断该侧边界是水平还是倾斜。"""
     pts = [p for p in pivots if p.side == side]
     if len(pts) < 3 or band_height <= 0:
@@ -371,8 +366,7 @@ def analyze(symbols: list[str], tf: str, db_path: Path) -> None:
         all_channels.append(ch)
 
         logger.info(
-            f"{symbol} {tf}: {len(df)} 根 | 枢轴 {len(pivots)} 个 | "
-            f"触碰事件 {len(events)} 次"
+            f"{symbol} {tf}: {len(df)} 根 | 枢轴 {len(pivots)} 个 | 触碰事件 {len(events)} 次"
         )
 
     # ---- Q1 通道诊断 ----
@@ -386,9 +380,11 @@ def analyze(symbols: list[str], tf: str, db_path: Path) -> None:
     else:
         abs_slope = ch_all["norm_slope"].abs()
         print(f"\n滚动窗口数: {len(ch_all)}   (窗口 250 根, 步长 50 根)")
-        print(f"归一化斜率绝对值  中位数 {abs_slope.median():.3f}"
-              f"   75分位 {abs_slope.quantile(0.75):.3f}"
-              f"   90分位 {abs_slope.quantile(0.90):.3f}")
+        print(
+            f"归一化斜率绝对值  中位数 {abs_slope.median():.3f}"
+            f"   75分位 {abs_slope.quantile(0.75):.3f}"
+            f"   90分位 {abs_slope.quantile(0.90):.3f}"
+        )
         print(f"回归 R²           中位数 {ch_all['r2'].median():.3f}")
         print(f"\n  |斜率| < 0.3 占比: {(abs_slope < 0.3).mean() * 100:.1f}%  → 水平近似可用")
         print(f"  |斜率| > 0.5 占比: {(abs_slope > 0.5).mean() * 100:.1f}%  → 明显倾斜")
@@ -418,7 +414,8 @@ def analyze(symbols: list[str], tf: str, db_path: Path) -> None:
                     {
                         "样本数": int(g["样本数"].sum()),
                         "突破概率": round(
-                            float((g["突破概率"] * g["样本数"]).sum() / g["样本数"].sum()), 1
+                            float((g["突破概率"] * g["样本数"]).sum() / g["样本数"].sum()),
+                            1,
                         ),
                     }
                 ),
@@ -451,7 +448,8 @@ def analyze(symbols: list[str], tf: str, db_path: Path) -> None:
                     {
                         "样本数": int(g["样本数"].sum()),
                         "突破概率": round(
-                            float((g["突破概率"] * g["样本数"]).sum() / g["样本数"].sum()), 1
+                            float((g["突破概率"] * g["样本数"]).sum() / g["样本数"].sum()),
+                            1,
                         ),
                     }
                 ),
@@ -461,15 +459,16 @@ def analyze(symbols: list[str], tf: str, db_path: Path) -> None:
         )
         print(cm.to_string(index=False))
 
-    print("\n参数快照: "
-          f"pivot={PIVOT_LEFT}/{PIVOT_RIGHT}  容差={LEVEL_TOLERANCE:.1%}  "
-          f"突破阈值={BREAKOUT_THRESHOLD:.1%}\n")
+    print(
+        "\n参数快照: "
+        f"pivot={PIVOT_LEFT}/{PIVOT_RIGHT}  容差={LEVEL_TOLERANCE:.1%}  "
+        f"突破阈值={BREAKOUT_THRESHOLD:.1%}\n"
+    )
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="支撑压力位诊断 + hazard 曲线")
-    p.add_argument("--symbols", nargs="+",
-                   default=["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"])
+    p.add_argument("--symbols", nargs="+", default=["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"])
     p.add_argument("--tf", default="4h", choices=["1h", "4h", "1d"])
     p.add_argument("--db", type=Path, default=DB_PATH)
     return p.parse_args()

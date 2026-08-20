@@ -16,7 +16,7 @@ transaction per event.
 
 import asyncio
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import aiosqlite
@@ -166,9 +166,7 @@ class StoragePlugin(Plugin):
             logger.debug(f"[{self.name}] flushed {len(batch)} technical rows")
 
     # ------------------------------------------------------------------
-    async def save_snapshot(
-        self, coin: str, avg_score: float, mentions: int, is_hot: bool
-    ) -> None:
+    async def save_snapshot(self, coin: str, avg_score: float, mentions: int, is_hot: bool) -> None:
         """Record a rolling-aggregator snapshot for time-series analysis."""
         if not self._db:
             return
@@ -180,7 +178,7 @@ class StoragePlugin(Plugin):
                 avg_score,
                 mentions,
                 int(is_hot),
-                datetime.now(timezone.utc).isoformat(),
+                datetime.now(UTC).isoformat(),
             ),
         )
         await self._db.commit()

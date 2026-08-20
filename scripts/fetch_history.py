@@ -17,10 +17,11 @@ import argparse
 import asyncio
 import sqlite3
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Final, Sequence
+from typing import Final
 
 import httpx
 from loguru import logger
@@ -68,7 +69,7 @@ class Kline:
     trade_count: int
 
     @classmethod
-    def from_binance(cls, symbol: str, interval: str, raw: Sequence) -> "Kline":
+    def from_binance(cls, symbol: str, interval: str, raw: Sequence) -> Kline:
         return cls(
             symbol=symbol,
             interval=interval,
@@ -126,8 +127,17 @@ def write_klines(db_path: Path, klines: list[Kline]) -> int:
 
     rows = [
         (
-            k.symbol, k.interval, k.open_time, k.open, k.high, k.low,
-            k.close, k.volume, k.close_time, k.quote_volume, k.trade_count,
+            k.symbol,
+            k.interval,
+            k.open_time,
+            k.open,
+            k.high,
+            k.low,
+            k.close,
+            k.volume,
+            k.close_time,
+            k.quote_volume,
+            k.trade_count,
         )
         for k in klines
     ]
@@ -148,9 +158,7 @@ def write_klines(db_path: Path, klines: list[Kline]) -> int:
     return inserted
 
 
-def get_existing_range(
-    db_path: Path, symbol: str, interval: str
-) -> tuple[int | None, int | None]:
+def get_existing_range(db_path: Path, symbol: str, interval: str) -> tuple[int | None, int | None]:
     """返回已有数据的 (最早 open_time, 最晚 open_time),空表返回 (None, None)。"""
     with sqlite3.connect(db_path) as conn:
         row = conn.execute(
@@ -191,7 +199,7 @@ async def fetch_page(
 
             # 429/418 = 限流,必须退避
             if resp.status_code in (429, 418):
-                wait = 2 ** attempt
+                wait = 2**attempt
                 logger.warning(f"{symbol} 被限流 ({resp.status_code}),等待 {wait}s")
                 await asyncio.sleep(wait)
                 continue
@@ -203,7 +211,7 @@ async def fetch_page(
             if attempt == MAX_RETRIES:
                 logger.error(f"{symbol} 第 {attempt} 次仍失败: {exc}")
                 raise
-            wait = 2 ** attempt
+            wait = 2**attempt
             logger.warning(f"{symbol} 第 {attempt} 次失败 ({exc}),{wait}s 后重试")
             await asyncio.sleep(wait)
 
@@ -224,10 +232,7 @@ async def fetch_symbol(
     total_new = 0
     page = 0
 
-    logger.info(
-        f"开始拉取 {symbol} {interval} | "
-        f"{_fmt(start_ms)} → {_fmt(end_ms)}"
-    )
+    logger.info(f"开始拉取 {symbol} {interval} | {_fmt(start_ms)} → {_fmt(end_ms)}")
 
     while cursor < end_ms:
         page += 1
@@ -251,8 +256,7 @@ async def fetch_symbol(
 
         last_open = klines[-1].open_time
         logger.debug(
-            f"{symbol} 第 {page} 页: 收到 {len(klines)} 根, "
-            f"新增 {new} 根, 游标 {_fmt(last_open)}"
+            f"{symbol} 第 {page} 页: 收到 {len(klines)} 根, 新增 {new} 根, 游标 {_fmt(last_open)}"
         )
 
         # 游标推进到最后一根之后,避免死循环
@@ -269,7 +273,7 @@ async def fetch_symbol(
 
 
 def _fmt(ms: int) -> str:
-    return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).strftime("%Y-%m-%d %H:%M")
+    return datetime.fromtimestamp(ms / 1000, tz=UTC).strftime("%Y-%m-%d %H:%M")
 
 
 # --------------------------------------------------------------------------
@@ -288,16 +292,13 @@ async def run(
 
     init_db(db_path)
 
-    end = datetime.now(tz=timezone.utc)
+    end = datetime.now(tz=UTC)
     start = end - timedelta(days=days)
     start_ms = int(start.timestamp() * 1000)
     end_ms = int(end.timestamp() * 1000)
 
     expected = (end_ms - start_ms) // INTERVAL_TO_MS[interval]
-    logger.info(
-        f"计划拉取 {len(symbols)} 个交易对 × 约 {expected} 根 "
-        f"({interval}, 近 {days} 天)"
-    )
+    logger.info(f"计划拉取 {len(symbols)} 个交易对 × 约 {expected} 根 ({interval}, 近 {days} 天)")
 
     # 串行拉取,避免并发触发 Binance 权重限流
     async with httpx.AsyncClient() as client:
@@ -324,27 +325,32 @@ async def run(
                     "SELECT COUNT(*) FROM klines_history WHERE symbol=? AND interval=?",
                     (symbol, interval),
                 ).fetchone()[0]
-            logger.info(
-                f"{symbol} {interval}: {count} 根 | {_fmt(lo)} → {_fmt(hi)}"
-            )
+            logger.info(f"{symbol} {interval}: {count} 根 | {_fmt(lo)} → {_fmt(hi)}")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="补拉 Binance 历史 K 线")
     parser.add_argument(
-        "--symbols", nargs="+", default=list(DEFAULT_SYMBOLS),
+        "--symbols",
+        nargs="+",
+        default=list(DEFAULT_SYMBOLS),
         help="交易对列表,默认 BTC/ETH/SOL/BNB",
     )
     parser.add_argument(
-        "--interval", default="1h",
+        "--interval",
+        default="1h",
         help=f"K 线周期,可选 {list(INTERVAL_TO_MS)},默认 1h",
     )
     parser.add_argument(
-        "--days", type=int, default=730,
+        "--days",
+        type=int,
+        default=730,
         help="往前拉取的天数,默认 730(两年)",
     )
     parser.add_argument(
-        "--db", type=Path, default=DB_PATH,
+        "--db",
+        type=Path,
+        default=DB_PATH,
         help="SQLite 路径,默认 data/market.db",
     )
     return parser.parse_args()

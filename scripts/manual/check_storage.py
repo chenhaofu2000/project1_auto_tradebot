@@ -17,11 +17,11 @@ import aiosqlite
 from loguru import logger
 
 from core.config import load_config
-from core.database import init_db, get_db_path
+from core.database import get_db_path, init_db
 from core.event_bus import EventBus
+from plugins.sentiment.aggregator import SentimentAggregator
 from plugins.sentiment.news_crawler import NewsCrawler
 from plugins.sentiment.scorer import SentimentScorer
-from plugins.sentiment.aggregator import SentimentAggregator
 from plugins.storage.storage_plugin import StoragePlugin
 
 
@@ -30,10 +30,13 @@ async def run_test() -> None:
     config = load_config()
     bus = EventBus()
 
-    crawler = NewsCrawler(bus, config={
-        "poll_interval": 30.0,
-        "request_timeout": config["news_crawler"]["request_timeout"],
-    })
+    crawler = NewsCrawler(
+        bus,
+        config={
+            "poll_interval": 30.0,
+            "request_timeout": config["news_crawler"]["request_timeout"],
+        },
+    )
     scorer = SentimentScorer(bus, config=config)
     aggregator = SentimentAggregator(bus, config=config)
     storage = StoragePlugin(bus, config={"storage": {"flush_interval": 5.0}})

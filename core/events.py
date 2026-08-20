@@ -9,7 +9,7 @@ If you later want strict schemas per event type, create subclasses
 of Event here (e.g. MarketDataEvent with typed price/volume fields).
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -20,7 +20,7 @@ from core.event_types import EventType
 def _utc_now() -> datetime:
     """Factory for UTC timestamps. All events use UTC for consistency
     between backtest and live trading."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Event(BaseModel):
@@ -28,11 +28,8 @@ class Event(BaseModel):
 
     type: EventType
     timestamp: datetime = Field(default_factory=_utc_now)
-    source: str = "unknown"              # Which module emitted this event
+    source: str = "unknown"  # Which module emitted this event
     data: dict[str, Any] = Field(default_factory=dict)
 
     def __str__(self) -> str:
-        return (
-            f"[{self.timestamp.isoformat()}] "
-            f"{self.type.value} from {self.source}: {self.data}"
-        )
+        return f"[{self.timestamp.isoformat()}] {self.type.value} from {self.source}: {self.data}"

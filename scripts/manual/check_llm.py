@@ -28,7 +28,7 @@ async def run_test() -> None:
     client = AsyncOpenAI(
         api_key=llm_cfg["api_key"],
         base_url=llm_cfg["base_url"],
-        timeout=20.0,   # fail fast instead of hanging forever
+        timeout=20.0,  # fail fast instead of hanging forever
     )
 
     try:
